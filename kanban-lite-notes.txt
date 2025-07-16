@@ -1,8 +1,0 @@
--- Docker init command
-docker run --name kanbanlite_db -e MYSQL_ROOT_PASSWORD=[pw] -d mysql:9.3.0
-
-
-docker run --name kanbanlite_db \
-  -e MYSQL_ROOT_PASSWORD=passwordpassword \
-  -p 3306:3306 \
-  -d mysql:9.3.0

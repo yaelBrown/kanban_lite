@@ -1,0 +1,89 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Board {
+  board_id             String    @id @default(uuid())
+  title                String
+  description          String
+  creator_id           Users     @relation(references: [user_id], fields: [usersUser_id])
+  creatorId            String
+  admins_id            Users[]   @relation("AdminBoards")
+  members              Users[]   @relation("MemberBoards")
+  datetime_created     DateTime
+  datetime_lastUpdated DateTime
+  columns              Columns[]
+  isVisible            Boolean   @default(true)
+  password             String? // Used for protected boards. (3 types; private, protected (with password), public)
+  usersUser_id         String
+  view_count           Int
+}
+
+model Columns {
+  column_id            String   @id @default(uuid())
+  column_bg_color      String
+  column_txt_color     String
+  title                String
+  description          String
+  task_ids             Tasks[] // Assuming task IDs are stored as a list of strings
+  datetime_created     DateTime
+  datetime_lastUpdated DateTime
+
+  Board Board[]
+}
+
+model Tasks {
+  task_id              String     @id @default(uuid())
+  description          String
+  creator_id           Users      @relation(name: "creator", fields: [creatorId], references: [user_id])
+  creatorId            String
+  datetime_created     DateTime
+  datetime_lastUpdated DateTime
+  datetime_due         DateTime
+  comment_ids          Comments[] // Assuming comment IDs are strings
+  priority             Int // 0–5 scale, can add validation at app level
+  assignee_id          String
+  reporter_id          String
+  watcher_ids          Users[]    @relation(name: "watchers") // Assuming a list of user IDs
+  view_count           Int
+  Columns              Columns[]
+}
+
+model Comments {
+  comment_id       String   @id @default(uuid())
+  datetime_created DateTime
+  datetime_updated DateTime
+  author           String
+  task_id          String
+  is_reply         Boolean
+  reply_comment_id String? // Nullable if not a reply
+
+  Tasks Tasks[]
+}
+
+model Users {
+  user_id         String   @id @default(uuid())
+  username        String   @unique
+  email           String   @unique
+  password        String
+  boards          Board[] // One-to-many relationship
+  adminBoards     Board[]  @relation("AdminBoards")
+  memberBoards    Board[]  @relation("MemberBoards")
+  date_created    DateTime
+  date_last_login DateTime
+
+  Tasks_watchers Tasks[] @relation(name: "watchers")
+  Tasks_creator  Tasks[] @relation(name: "creator")
+}

@@ -1,0 +1,145 @@
+-- Docker init command
+docker run --name kanbanlite_db -e MYSQL_ROOT_PASSWORD=[pw] -d mysql:9.3.0
+
+
+docker run --name kanbanlite_db \
+  -e MYSQL_ROOT_PASSWORD=passwordpassword \
+  -p 3306:3306 \
+  -d mysql:9.3.0
+
+
+Watch prisma tutorial
+Watch next 15 tutorial
+
+
+
+
+Prisma
+  https://www.youtube.com/watch?v=QXxy8Uv1LnQ
+  45:30
+
+npm i prisma --save-dev
+
+npx prisma init --datesource-provider mysql
+
+model Post {
+  id Int @id @default(cuid())
+  title String
+  slug String // a title but more appropriate for a url
+  published Boolean? @default(false)
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  @@index(slug) // Makes access to the db much faster
+  @@map("title") // Something to do with names
+  @@unique([title, content]) // Make these both unique together
+}
+
+(install prisma extension)
+
+src/lib/db.ts
+  // lib/prisma.ts
+  import { PrismaClient } from "@prisma/client";
+
+  const globalForPrisma = global as unknown as { prisma: PrismaClient };
+
+  export const prisma =
+    globalForPrisma.prisma || new PrismaClient();
+
+  if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+
+// Example get all posts with where-condition
+  const posts = await prisma.post.findMany({
+    where: { 
+      title: {
+        endsWith: "Post"
+      }
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+    },
+    take: 1,
+    skip: 1,
+  });
+  const postCount = await prisma.post.count();
+
+// Server actions with nextjs
+// actions.ts 
+  "use server";
+
+  import prisma from "@/lib/db"
+
+  // Create
+  export async function createPost(formActions) {
+    await prisma.post.create({
+      data: {
+        title: formData.get("title") as string,
+        slug: (formData.get("title") as string)
+          .replace(/\s+/g, "-")
+          .toLowerCase(),
+        content: formData.get("content") as string,
+      }
+    })
+
+    revalidatePath("/posts") // Automatically updates the page after a new entry was added to the database. 
+  }
+
+  // Update
+  export async function editPost(formData: FormData, id: string) {
+    await prisma.post.update(
+      ...
+    )
+  }
+
+  export async function deletePost(id: string) {
+    await prisma.post.delete({ where: { id }});
+  }
+
+npx prisma db push
+  updates the database with the new schema data
+
+npx prisma studio
+  opens ui that allows you to see inside of the database
+
+
+
+
+
+
+
+
+
+
+
+?
+  shadon ui
+  zod - typescript
+    first validation library
+    validates forms, and works with react-hook-form
+  react-hook-form
+  framer motion
+  next-auth vs kinde
+    auth
+  stripe, kinde
+    payments
+  vercel
+    hosting
+
+  react native & expo
+    mobile
+
+
+
+
+
+
+
+
+
+
+
